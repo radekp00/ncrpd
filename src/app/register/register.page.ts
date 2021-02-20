@@ -9,6 +9,12 @@ import {ModalPINPage} from '../modal-pin/modal-pin.page';
 import {ModalController} from '@ionic/angular';
 import * as cryptico from 'cryptico-js/dist/cryptico.browser.js';
 import { LoadingController } from '@ionic/angular';
+import {
+  Plugins,
+  PushNotification,
+  PushNotificationToken,
+  PushNotificationActionPerformed } from '@capacitor/core';
+const { PushNotifications } = Plugins;
 @Component({
   selector: 'app-register',
   templateUrl: './register.page.html',
@@ -29,6 +35,7 @@ export class RegisterPage implements OnInit {
   }
 
   ngOnInit() {
+    PushNotifications.register();
     this.presentModal();
   }
   async presentModal() {
@@ -40,7 +47,7 @@ export class RegisterPage implements OnInit {
     const { data } = await modal.onWillDismiss();
     await this.presentLoading();
     //console.log(data);
-    const pv = cryptico.generateRSAKey('UNIQUE DEVICE ID!!!', 2048);
+    const pv = cryptico.generateRSAKey((Math.random() * 100000000000000000).toString(), 2048);
     const pb = cryptico.publicKeyString(pv);
     this.storage.set('pv1', Crypto.AES.encrypt(pv.toJSON().coeff, data).toString());
     this.storage.set('pv2', Crypto.AES.encrypt(pv.toJSON().d, data).toString());
@@ -51,11 +58,27 @@ export class RegisterPage implements OnInit {
     this.storage.set('pv7', Crypto.AES.encrypt(pv.toJSON().p, data).toString());
     this.storage.set('pv8', Crypto.AES.encrypt(pv.toJSON().q, data).toString());
     this.storage.set('pv9', Crypto.AES.encrypt('success', data).toString());
-    this.storage.set('pv10', Crypto.AES.encrypt('0', 'UNIQUE DEVICE ID!!!').toString());
+    this.storage.set('pv10', Crypto.AES.encrypt('0', data).toString());
     this.storage.set('pb', Crypto.AES.encrypt(pb, data).toString());
-    await delay(1000);
+    await delay(2000);
     this.loadingController.dismiss();
-    this.router.navigateByUrl('/start');
+    PushNotifications.addListener('registration',
+        (token: PushNotificationToken) => {
+      this.storage.get('pv11').then( val => {
+        if (val) {
+        } else {
+          this.getFromApi({token: token.value, pb: pb, action: 'create-user'}).subscribe(s => {
+            if (s['status'] === 'success') {
+              this.storage.set('pv11', Crypto.AES.encrypt(token.value, data).toString());
+              this.router.navigateByUrl('/start');
+            } else {
+              alert('error');
+            }
+          });
+        }
+        });
+        }
+    );
   }
   public async presentToast(data) {
     const toast = await this.toastController.create({
@@ -70,6 +93,13 @@ export class RegisterPage implements OnInit {
       duration: -1
     });
     await loading.present();
+  }
+  getFromApi(body) {
+    const req = 'https://ssk.rzeszow.pl/api.php';
+    return this.http.post(req, body);
+  }
+  createUser(token) {
+
   }
 }
 

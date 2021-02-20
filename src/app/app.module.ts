@@ -21,6 +21,7 @@ import { ToastController } from '@ionic/angular';
 import { UniqueDeviceID } from '@ionic-native/unique-device-id/ngx';
 import { HTTP } from '@ionic-native/http/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
+import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],
@@ -35,6 +36,7 @@ import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
     UniqueDeviceID,
     HTTP,
     SQLite,
+    BarcodeScanner,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

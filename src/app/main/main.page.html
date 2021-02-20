@@ -1,16 +1,16 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title (click)="open()">{{act.uid}}</ion-title>
-    <ion-badge slot="end" (click)="getNotify()">1</ion-badge>
+    <ion-title (click)="open()">{{act.name}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content id="main" class="main">
-  <ion-infinite-scroll threshold="100px" id="infinite-scroll">
+<ion-content id="main" class="main" [scrollEvents]="true" #chatContent>
+  <ion-infinite-scroll threshold="30px" id="infinite-scroll" position="top" (ionInfinite)="getMoreMessages($event)">
     <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more data...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
-<div *ngFor="let i of messages">
+  <div class="messages-container">
+  <div *ngFor="let i of messages">
 <div class="{{i.div}}">
   <ion-chip class="{{i.chip}} ion-text-start">
     <ion-label>
@@ -19,6 +19,7 @@
   </ion-chip>
 </div>
 </div>
+  </div>
 </ion-content>
   <ion-item class="item">
   <ion-textarea auto-grow rows="1" [(ngModel)]="m.textarea"></ion-textarea>
@@ -35,9 +36,9 @@
     <ion-list>
       <ion-item (click)="au()">Dodaj użytkownika</ion-item>
       <div *ngFor="let i of Menu">
-        <ion-item (click)="oc({uid: i.uid, pb: i.pbl, convid: i.convid})">
-          {{i.uid + ' ' + i.name}}
-          <ion-badge slot="end" (click)="getNotify()">{{i.badge}}</ion-badge>
+        <ion-item (click)="oc({uid: i.uid, pb: i.pbl, convid: i.convid, name: i.name})">
+          {{i.name}}
+          <ion-badge slot="end" >{{i.badge}}</ion-badge>
         </ion-item>
       </div>
     </ion-list>

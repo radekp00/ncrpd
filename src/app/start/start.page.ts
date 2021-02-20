@@ -14,9 +14,15 @@ import {ModalPINPage} from '../modal-pin/modal-pin.page';
 import * as Crypto from 'crypto-js';
 import * as cryptico from 'cryptico-js/dist/cryptico.browser.js';
 import {EventsService} from '../events.service';
-import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
+import { DataService } from '../data.service';
 import { IonSlides } from '@ionic/angular';
 import { ViewChild } from '@angular/core';
+import {
+    Plugins,
+    PushNotification,
+    PushNotificationToken,
+    PushNotificationActionPerformed } from '@capacitor/core';
+const { PushNotifications } = Plugins;
 @Component({
   selector: 'app-start',
   templateUrl: './start.page.html',
@@ -25,7 +31,7 @@ import { ViewChild } from '@angular/core';
 export class StartPage implements OnInit {
     // @ts-ignore
     @ViewChild( 'mySlider' ) slider: IonSlides;
-  rsa = new cryptico.RSAKey();
+
   hideIntroduction = 1;
   platformdet: any;
   token: any;
@@ -35,15 +41,56 @@ export class StartPage implements OnInit {
     token: '',
     state: ''
   };
+  rsa = {
+      n: '',
+      e: '',
+      d: '',
+      p: '',
+      q: '',
+      dmp1: '',
+      dmq1: '',
+      coeff: ''
+  };
   slideOpts = {
     initialSlide: 0,
     speed: 400
   };
-  constructor(private storage: Storage, private router: Router, public toastController: ToastController, private platform: Platform,
+  constructor(private storage: Storage, public router: Router, public toastController: ToastController, private platform: Platform,
               private http: HttpClient, route: ActivatedRoute, private httpn: HTTP, private modalController: ModalController,
-              private eventsService: EventsService, private sqlite: SQLite) {
+              private eventsService: EventsService, public dataService: DataService) {
+      this.startWorker();
+      PushNotifications.addListener('pushNotificationReceived',
+          (notification: PushNotification) => {
+              // LocalNotifications.schedule({
+              //     id: notification.data.id,
+              //     text: notification.data.id,
+              //     data: { secret: 'key' }
+              // });
+              // alert('Push received: ' + JSON.stringify(notification));
+              switch (notification.data.type) {
+                  case 'message':
+                          this.eventsService.publishSomeData({
+                              event: 'newMessage',
+                              message: notification.data.message,
+                              moreThanOne: notification.data.moreThanOne
+                          });
+                          console.log('success, got message');
+                          break;
+                  case 'notification':
+                      this.eventsService.publishSomeData({
+                          event: 'newMessageNotification'
+                      });
+                      break;
+                  case 'command':
+                      break;
+                  case 'recKey':
+                      break;
+              }
+          }
+      );
     route.params.subscribe(val => {
       this.platform.ready().then(() => {
+          console.log('tutej');
         // 'hybrid' detects both Cordova and Capacitor
         if (this.platform.is('hybrid')) {
           this.platformdet = 1;
@@ -58,8 +105,12 @@ export class StartPage implements OnInit {
         switch (val) {
           case null:
             // Slide introduction, navigate to /register at end
+              this.dataService.addUsersTable();
+              this.dataService.addMessagesTable();
+              this.dataService.addBufferTable();
               this.hideIntroduction = 0;
-              this.slider.update();
+              this.slider.update()
+                  .catch(e => console.log(e));
              //this.router.navigateByUrl('/register');
               //const pv = cryptico.generateRSAKey('asd', 2048);
               //const pb = cryptico.publicKeyString(pv);
@@ -68,25 +119,10 @@ export class StartPage implements OnInit {
               // rsa.setPrivateEx(val.n, val.e, val.d, val.p, val.q, val.dmp1, val.dmq1, val.coeff);
               // console.log(cryptico.decrypt(idr.cipher, rsa));
               break;
-          default:
-              this.sqlite.create({
-                  name: 'datass.db',
-                  location: 'default',
-                  key: 'klucz123'
-              })
-                  .then((db: SQLiteObject) => {
-
-
-                      db.executeSql('create table danceMoves(name VARCHAR(32))', [])
-                          .then(() => console.log('Executed SQL'))
-                          .catch(e => console.log(e));
-
-
-                  })
-                  .catch(e => console.log(e ));
+            default:
             do {
               await this.presentModal();
-              await delay(100);
+              await delay(500);
               console.log(this.logines.state);
             } while (this.logines.state !== 'success');
             /* const navigationExtras: NavigationExtras = {
@@ -94,7 +130,19 @@ export class StartPage implements OnInit {
                 user: 'this.user'
               }
             }; */
-            this.router.navigate(['main'], {state: {rsa: this.rsa}});
+            // await delay(1000);
+            console.log(this.rsa);
+            this.router.navigate(['main'], {state: {
+                    n: this.rsa.n,
+                    e: this.rsa.e,
+                    d: this.rsa.d,
+                    p: this.rsa.p,
+                    q: this.rsa.q,
+                    dmp1: this.rsa.dmp1,
+                    dmq1: this.rsa.dmq1,
+                    coeff: this.rsa.coeff,
+                    token: this.token
+            }});
             break;
         }
       });
@@ -102,11 +150,12 @@ export class StartPage implements OnInit {
     });
   }
   ngOnInit(): void {
-    this.storage.get('a').then((val) => {
-      if (val === '3') {
-        this.startWorker();
-    }
-    });
+
+    // this.storage.get('a').then((val) => {
+    //   if (val === '3') {
+    //     this.startWorker();
+    // }
+    // });
   }
 
   public async presentToast(data) {
@@ -215,11 +264,10 @@ export class StartPage implements OnInit {
     BackgroundMode.excludeFromTaskList();
     BackgroundMode.enable();
     BackgroundMode.on('activate').subscribe(() => {
-      BackgroundMode.disableWebViewOptimizations();
+    BackgroundMode.disableWebViewOptimizations();
       // BackgroundMode.disableBatteryOptimizations(); //disable Battery optimizations
-      console.log("background activate !!!!");
+    console.log("background activate !!!!");
     });
-    this.worker();
   }
   async presentModal() {
     const modal = await this.modalController.create({
@@ -227,9 +275,9 @@ export class StartPage implements OnInit {
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    this.storage.get('pv9').then( val => {
-      this.logines.state = Crypto.AES.decrypt(val, data).toString(Crypto.enc.Utf8);
-      if (this.logines.state === 'success') {
+    await this.storage.get('pv9').then( val => {
+        this.logines.state = Crypto.AES.decrypt(val, data).toString(Crypto.enc.Utf8);
+        if (this.logines.state === 'success') {
           // this.rsa.setPrivateEx(val.n, val.e, val.d, val.p, val.q, val.dmp1, val.dmq1, val.coeff);
           this.storage.get('pv1').then( pv1 => {
               this.storage.get('pv2').then( pv2 => {
@@ -239,16 +287,17 @@ export class StartPage implements OnInit {
                               this.storage.get('pv6').then( pv6 => {
                                   this.storage.get('pv7').then( pv7 => {
                                       this.storage.get('pv8').then( pv8 => {
-                                          this.rsa.setPrivateEx(
-                                              Crypto.AES.decrypt(pv6, data).toString(Crypto.enc.Utf8), // n
-                                              Crypto.AES.decrypt(pv5, data).toString(Crypto.enc.Utf8), // e
-                                              Crypto.AES.decrypt(pv2, data).toString(Crypto.enc.Utf8), // d
-                                              Crypto.AES.decrypt(pv7, data).toString(Crypto.enc.Utf8), // p
-                                              Crypto.AES.decrypt(pv8, data).toString(Crypto.enc.Utf8), // q
-                                              Crypto.AES.decrypt(pv3, data).toString(Crypto.enc.Utf8), // dmp1
-                                              Crypto.AES.decrypt(pv4, data).toString(Crypto.enc.Utf8), // dmq1
-                                              Crypto.AES.decrypt(pv1, data).toString(Crypto.enc.Utf8) // coeff
-                                          );
+                                          this.storage.get('pv11').then( pv11 => {
+                                              this.rsa.n = Crypto.AES.decrypt(pv6, data).toString(Crypto.enc.Utf8); // n
+                                              this.rsa.e = Crypto.AES.decrypt(pv5, data).toString(Crypto.enc.Utf8); // e
+                                              this.rsa.d = Crypto.AES.decrypt(pv2, data).toString(Crypto.enc.Utf8); // d
+                                              this.rsa.p =  Crypto.AES.decrypt(pv7, data).toString(Crypto.enc.Utf8); // p
+                                              this.rsa.q = Crypto.AES.decrypt(pv8, data).toString(Crypto.enc.Utf8); // q
+                                              this.rsa.dmp1 =  Crypto.AES.decrypt(pv3, data).toString(Crypto.enc.Utf8); // dmp1
+                                              this.rsa.dmq1 =  Crypto.AES.decrypt(pv4, data).toString(Crypto.enc.Utf8); // dmq1
+                                              this.rsa.coeff =  Crypto.AES.decrypt(pv1, data).toString(Crypto.enc.Utf8); // coeff
+                                              this.token = Crypto.AES.decrypt(pv11, data).toString(Crypto.enc.Utf8); // token
+                                          });
                                       });
                                   });
                               });
