@@ -1,0 +1,14 @@
+.my {
+--background: var(--ion-color-tertiary);
+  margin-left: 10%;
+  height: unset;
+}
+.notmy {
+  margin-right: 10%;
+  height: unset;
+}
+ion-item.item {
+  --highlight-height: 0px;
+  border-radius: 50px;
+  margin: 10px;
+}

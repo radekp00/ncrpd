@@ -1,0 +1,17 @@
+<ion-header>
+</ion-header>
+
+<ion-content [hidden]="hideIntroduction">
+  <ion-slides #mySlider pager="true" [options]="slideOpts">
+    <ion-slide>
+      <h1>Slide x1</h1>
+    </ion-slide>
+    <ion-slide>
+      <h1>Slide 2</h1>
+    </ion-slide>
+    <ion-slide>
+      <h1>Slide 3</h1>
+      <ion-button fill="clear" (click)="this.router.navigateByUrl('/register')" >CONTINUE</ion-button>
+    </ion-slide>
+  </ion-slides>
+</ion-content>

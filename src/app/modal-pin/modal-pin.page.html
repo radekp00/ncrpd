@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>ModalPIN</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-text color="danger" class="ion-text-center">
+    <h4 >{{text}}</h4>
+  </ion-text>
+    <ion-grid style="text-align: center">
+      <ion-row>
+        <ion-col></ion-col>
+        <ion-col></ion-col>
+        <ion-col><ion-checkbox disabled [checked]="checkbox[0]" style="--checkmark-width: 0" color="dark" mode="ios"></ion-checkbox></ion-col>
+        <ion-col><ion-checkbox disabled [checked]="checkbox[1]" style="--checkmark-width: 0" color="dark" mode="ios"></ion-checkbox></ion-col>
+        <ion-col><ion-checkbox disabled [checked]="checkbox[2]" style="--checkmark-width: 0" color="dark" mode="ios"></ion-checkbox></ion-col>
+        <ion-col><ion-checkbox disabled [checked]="checkbox[3]" style="--checkmark-width: 0" color="dark" mode="ios"></ion-checkbox></ion-col>
+        <ion-col><ion-checkbox disabled [checked]="checkbox[4]" style="--checkmark-width: 0" color="dark" mode="ios"></ion-checkbox></ion-col>
+        <ion-col></ion-col>
+        <ion-col></ion-col>
+      </ion-row>
+    </ion-grid>
+<ion-grid style="text-align: center">
+  <ion-row justify-content-center>
+    <ion-col >
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('1')">1</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('2')">2</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('3')">3</ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row justify-content-center>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('4')">4</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('5')">5</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('6')">6</ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row justify-content-center>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('7')">7</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('8')">8</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('9')">9</ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row justify-content-center>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('del')"><ion-icon slot="start" name="chevron-back-outline"></ion-icon></ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('0')">0</ion-button>
+    </ion-col>
+    <ion-col align-self-center>
+      <ion-button shape="round" size="large" fill="outline" (click)="hi('enter')"><ion-icon name="enter-outline"></ion-icon></ion-button>
+    </ion-col>
+  </ion-row>
+</ion-grid>
+</ion-content>
